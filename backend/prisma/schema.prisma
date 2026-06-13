@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  avatar       String?
+  password     String?
+  googleId     String?      @unique
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  repositories    Repository[]
+  sessions        Session[]
+  recommendations UserRecommendation[]
+  profile         UserProfile?
+
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Repository {
+  id            String        @id @default(cuid())
+  userId        String
+  githubId      BigInt        @unique
+  name          String
+  fullName      String
+  description   String?
+  url           String
+  homepage      String?
+  stars         Int           @default(0)
+  forks         Int           @default(0)
+  openIssues    Int           @default(0)
+  watchers      Int           @default(0)
+  size          Int           @default(0)
+  defaultBranch String        @default("main")
+  isPrivate     Boolean       @default(false)
+  isFork        Boolean       @default(false)
+  isArchived    Boolean       @default(false)
+  license       String?
+  topics        String[]
+  pushedAt      DateTime?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  languages     Language[]
+  contributors  Contributor[]
+  issues        Issue[]
+  pullRequests  PullRequest[]
+  branches      Branch[]
+  commits       CommitActivity[]
+  clusterResult RepositoryClusterResult?
+
+  @@index([userId])
+  @@index([fullName])
+  @@map("repositories")
+}
+
+model Language {
+  id           String     @id @default(cuid())
+  repositoryId String
+  name         String
+  bytes        Int
+  percentage   Float
+  color        String?
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, name])
+  @@index([repositoryId])
+  @@map("languages")
+}
+
+model Contributor {
+  id           String     @id @default(cuid())
+  repositoryId String
+  githubId     BigInt
+  login        String
+  avatarUrl    String?
+  profileUrl   String?
+  contributions Int       @default(0)
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, githubId])
+  @@index([repositoryId])
+  @@map("contributors")
+}
+
+model Issue {
+  id           String     @id @default(cuid())
+  repositoryId String
+  githubId     BigInt
+  number       Int
+  title        String
+  body         String?
+  state        String
+  labels       String[]
+  author       String?
+  authorAvatar String?
+  comments     Int        @default(0)
+  closedAt     DateTime?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  mlResult     IssueMLResult?
+  clusterResult IssueClusterResult?
+
+  @@unique([repositoryId, githubId])
+  @@index([repositoryId])
+  @@index([state])
+  @@map("issues")
+}
+
+model PullRequest {
+  id           String     @id @default(cuid())
+  repositoryId String
+  githubId     BigInt
+  number       Int
+  title        String
+  body         String?
+  state        String
+  draft        Boolean    @default(false)
+  labels       String[]
+  author       String?
+  authorAvatar String?
+  additions    Int        @default(0)
+  deletions    Int        @default(0)
+  changedFiles Int        @default(0)
+  comments     Int        @default(0)
+  mergedAt     DateTime?
+  closedAt     DateTime?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, githubId])
+  @@index([repositoryId])
+  @@index([state])
+  @@map("pull_requests")
+}
+
+model Branch {
+  id           String     @id @default(cuid())
+  repositoryId String
+  name         String
+  isDefault    Boolean    @default(false)
+  isProtected  Boolean    @default(false)
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, name])
+  @@index([repositoryId])
+  @@map("branches")
+}
+
+model CommitActivity {
+  id           String     @id @default(cuid())
+  repositoryId String
+  week         DateTime
+  total        Int        @default(0)
+  days         Int[]
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, week])
+  @@index([repositoryId])
+  @@map("commit_activity")
+}
+
+model IssueMLResult {
+  id           String   @id @default(cuid())
+  issueId      String   @unique
+  difficulty   String
+  confidence   Float
+  probabilities Json
+  rfPrediction  String?
+  xgbPrediction String?
+  featureImportance Json?
+  createdAt    DateTime @default(now())
+  issue        Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("issue_ml_results")
+}
+
+model IssueClusterResult {
+  id           String   @id @default(cuid())
+  issueId      String   @unique
+  category     String
+  confidence   Float
+  probabilities Json
+  createdAt    DateTime @default(now())
+  issue        Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("issue_cluster_results")
+}
+
+model RepositoryClusterResult {
+  id           String     @id @default(cuid())
+  repositoryId String     @unique
+  cluster      String
+  confidence   Float
+  allScores    Json
+  pcaX         Float?
+  pcaY         Float?
+  explanation  Json?
+  createdAt    DateTime   @default(now())
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@map("repository_cluster_results")
+}
+
+model UserRecommendation {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  targetId    String?
+  title       String
+  description String?
+  score       Float
+  reasons     String[]
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("user_recommendations")
+}
+
+model UserProfile {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  skills               String[]
+  dominantCategory     String?
+  experienceLevel      String?
+  contributionCount    Int      @default(0)
+  preferredLanguages   String[]
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
