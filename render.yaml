@@ -5,12 +5,12 @@ services:
     env: node
     plan: free
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate
+    buildCommand: npm install && npx prisma generate && npm run build
     startCommand: npx prisma migrate deploy && node dist/index.js
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        sync: false          # paste your Supabase DATABASE_URL in Render dashboard
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
@@ -24,11 +24,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        sync: false          # e.g. https://devmateai.com
+        sync: false
       - key: ML_SERVICE_URL
-        sync: false          # e.g. https://devmate-ml-service.onrender.com
-      - key: PORT
-        value: 5000
+        sync: false
 
   # ── ML Service ───────────────────────────────────────────────
   - type: web
