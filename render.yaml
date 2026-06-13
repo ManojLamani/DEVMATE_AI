@@ -1,0 +1,44 @@
+services:
+  # ── Backend API ──────────────────────────────────────────────
+  - type: web
+    name: devmate-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npx prisma migrate deploy && node dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # paste your Supabase DATABASE_URL in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false          # e.g. https://devmateai.com
+      - key: ML_SERVICE_URL
+        sync: false          # e.g. https://devmate-ml-service.onrender.com
+      - key: PORT
+        value: 5000
+
+  # ── ML Service ───────────────────────────────────────────────
+  - type: web
+    name: devmate-ml-service
+    env: python
+    plan: free
+    rootDir: ml-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
