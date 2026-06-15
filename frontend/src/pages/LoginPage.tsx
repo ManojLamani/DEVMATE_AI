@@ -35,7 +35,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your DevMate AI account">
+    <AuthLayout title="Welcome back" subtitle="Analyze GitHub repositories with AI-powered insights">
       {error && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
