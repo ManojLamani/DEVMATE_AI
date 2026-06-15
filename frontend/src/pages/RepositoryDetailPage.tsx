@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Box, Typography, Grid, Chip, Avatar, Button, Tab, Tabs,
-  LinearProgress, Skeleton, Link as MuiLink, CircularProgress, Tooltip,
+  LinearProgress, Skeleton, Link as MuiLink, CircularProgress, Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
   Star, GitFork, Bug, Eye, GitBranch, Users, Code, ExternalLink,
@@ -148,7 +148,7 @@ export const RepositoryDetailPage = () => {
                   >
                     View on GitHub
                   </Button>
-                  <Tooltip title={!repo.issues?.length ? 'No issues to analyze' : ''}>
+                  <MuiTooltip title={!repo.issues?.length ? 'No issues to analyze' : ''}>
                     <span>
                       <Button
                         variant="contained"
@@ -162,7 +162,7 @@ export const RepositoryDetailPage = () => {
                         {mlDone.includes('predict') ? 'Difficulty Predicted ✓' : 'Predict Issue Difficulty'}
                       </Button>
                     </span>
-                  </Tooltip>
+                  </MuiTooltip>
                   <Button
                     variant="outlined"
                     startIcon={mlLoading === 'cluster' ? <CircularProgress size={14} color="inherit" /> : <Layers size={16} />}
