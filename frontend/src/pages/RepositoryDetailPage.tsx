@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import {
   Box, Typography, Grid, Chip, Avatar, Button, Tab, Tabs,
-  LinearProgress, Skeleton, Link as MuiLink,
+  LinearProgress, Skeleton, Link as MuiLink, CircularProgress, Tooltip,
 } from '@mui/material';
 import {
   Star, GitFork, Bug, Eye, GitBranch, Users, Code, ExternalLink,
-  GitPullRequest, Activity, ArrowLeft,
+  GitPullRequest, Activity, ArrowLeft, Brain, Layers,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -32,6 +32,8 @@ export const RepositoryDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [tab, setTab] = useState(0);
+  const [mlLoading, setMlLoading] = useState<'predict' | 'cluster' | null>(null);
+  const [mlDone, setMlDone] = useState<string[]>([]);
 
   const { data: repoData, isLoading: repoLoading } = useQuery({
     queryKey: ['repository', id],
@@ -48,6 +50,30 @@ export const RepositoryDetailPage = () => {
   const loading = repoLoading || analyticsLoading;
   const repo = repoData;
   const analytics = analyticsData;
+
+  const handlePredictDifficulty = async () => {
+    if (!repo?.issues?.length) return;
+    setMlLoading('predict');
+    try {
+      for (const issue of repo.issues.slice(0, 20)) {
+        await repositoryService.predictIssueDifficulty(issue.id).catch(() => {});
+      }
+      setMlDone(d => [...d, 'predict']);
+    } finally {
+      setMlLoading(null);
+    }
+  };
+
+  const handleClusterIssues = async () => {
+    if (!id) return;
+    setMlLoading('cluster');
+    try {
+      await repositoryService.clusterIssues(id);
+      setMlDone(d => [...d, 'cluster']);
+    } finally {
+      setMlLoading(null);
+    }
+  };
 
   const commitTrend = analytics?.commitTrend?.slice(-12) || [];
   const prData = analytics
@@ -110,17 +136,44 @@ export const RepositoryDetailPage = () => {
                     ))}
                   </Box>
                 </Box>
-                <Button
-                  variant="outlined"
-                  endIcon={<ExternalLink size={16} />}
-                  component={MuiLink}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ borderColor: 'rgba(99,102,241,0.4)', color: 'primary.light', height: 42, alignSelf: 'flex-start' }}
-                >
-                  View on GitHub
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignSelf: 'flex-start' }}>
+                  <Button
+                    variant="outlined"
+                    endIcon={<ExternalLink size={16} />}
+                    component={MuiLink}
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ borderColor: 'rgba(99,102,241,0.4)', color: 'primary.light', height: 38 }}
+                  >
+                    View on GitHub
+                  </Button>
+                  <Tooltip title={!repo.issues?.length ? 'No issues to analyze' : ''}>
+                    <span>
+                      <Button
+                        variant="contained"
+                        startIcon={mlLoading === 'predict' ? <CircularProgress size={14} color="inherit" /> : <Brain size={16} />}
+                        onClick={handlePredictDifficulty}
+                        disabled={!repo.issues?.length || mlLoading !== null}
+                        size="small"
+                        fullWidth
+                        sx={{ bgcolor: mlDone.includes('predict') ? '#34d399' : '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}
+                      >
+                        {mlDone.includes('predict') ? 'Difficulty Predicted ✓' : 'Predict Issue Difficulty'}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Button
+                    variant="outlined"
+                    startIcon={mlLoading === 'cluster' ? <CircularProgress size={14} color="inherit" /> : <Layers size={16} />}
+                    onClick={handleClusterIssues}
+                    disabled={!repo.issues?.length || mlLoading !== null}
+                    size="small"
+                    sx={{ borderColor: 'rgba(34,211,238,0.4)', color: '#22d3ee' }}
+                  >
+                    {mlDone.includes('cluster') ? 'Issues Clustered ✓' : 'Cluster Issues'}
+                  </Button>
+                </Box>
               </Box>
 
               <Box sx={{ display: 'flex', gap: 4, mt: 3, flexWrap: 'wrap' }}>

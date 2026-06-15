@@ -21,4 +21,13 @@ export const repositoryService = {
 
   getAnalytics: (id: string) =>
     api.get<ApiResponse<AnalyticsData>>(`/analytics/repository/${id}`),
+
+  predictIssueDifficulty: (issueId: string) =>
+    api.post(`/ml/issues/${issueId}/predict-difficulty`),
+
+  clusterIssues: (repoId: string) =>
+    api.post(`/ml/repositories/${repoId}/cluster-issues`),
+
+  clusterRepository: (repoId: string) =>
+    api.post(`/ml/repositories/${repoId}/cluster`),
 };
