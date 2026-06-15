@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import {
-  Box, Button, TextField, Typography, Divider,
+  Box, Button, TextField, Typography,
   InputAdornment, IconButton, Alert, CircularProgress,
 } from '@mui/material';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { authService } from '../services/auth.service';
@@ -30,20 +29,6 @@ export const RegisterPage = () => {
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       setError(e.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogle = async (credential: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      const { data } = await authService.googleAuth(credential);
-      setAuth(data.data.user, data.data.token);
-      navigate('/dashboard');
-    } catch {
-      setError('Google sign-in failed.');
     } finally {
       setLoading(false);
     }
@@ -117,21 +102,6 @@ export const RegisterPage = () => {
             {loading ? <CircularProgress size={22} color="inherit" /> : 'Create Account'}
           </Button>
         </motion.div>
-      </Box>
-
-      <Divider sx={{ my: 3, borderColor: 'rgba(148,163,184,0.12)' }}>
-        <Typography variant="caption" color="text.secondary">OR</Typography>
-      </Divider>
-
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <GoogleLogin
-          onSuccess={(r) => r.credential && handleGoogle(r.credential)}
-          onError={() => setError('Google sign-in failed.')}
-          theme="filled_black"
-          shape="pill"
-          size="large"
-          width="340"
-        />
       </Box>
 
       <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 3 }}>

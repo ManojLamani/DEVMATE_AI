@@ -8,9 +8,6 @@ export const authService = {
   login: (data: { email: string; password: string }) =>
     api.post<ApiResponse<{ user: User; token: string }>>('/auth/login', data),
 
-  googleAuth: (credential: string) =>
-    api.post<ApiResponse<{ user: User; token: string }>>('/auth/google', { credential }),
-
   getMe: () =>
     api.get<ApiResponse<{ user: User }>>('/auth/me'),
 };
