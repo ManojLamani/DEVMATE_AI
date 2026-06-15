@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm install --include=dev && npx prisma generate && npm run build
-    startCommand: node dist/index.js
+    startCommand: npx prisma migrate deploy && node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -15,14 +15,10 @@ services:
         sync: false
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
       - key: GITHUB_TOKEN
         sync: false
       - key: FRONTEND_URL
-        value: https://frontend-azure-delta-32.vercel.app
+        value: https://devmate-frontend.vercel.app
       - key: ML_SERVICE_URL
         sync: false
 
