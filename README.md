@@ -36,29 +36,17 @@ cd DEVMATE_AI
 
 **2. Create a root `.env` file**
 ```bash
-cp backend/.env.example .env
+cp .env.example .env
 ```
 
-Edit `.env` with your values:
-```env
-POSTGRES_USER=devmate
-POSTGRES_PASSWORD=devmate_secret
-POSTGRES_DB=devmate
-
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRES_IN=7d
-
-GITHUB_TOKEN=your_github_personal_access_token
-
-VITE_API_URL=http://localhost:5000/api
-
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
+Edit `.env` and set at least `JWT_SECRET`. `GITHUB_TOKEN` and `ANTHROPIC_API_KEY` are optional.
 
 **3. Start all services**
 ```bash
 docker compose up --build
 ```
+
+Database migrations run automatically when the backend starts.
 
 | Service | URL |
 |---|---|
@@ -66,10 +54,14 @@ docker compose up --build
 | Backend API | http://localhost:5000 |
 | ML Service | http://localhost:8000 |
 
-**4. Run database migrations (first time only)**
+If any of these ports are already in use, change `FRONTEND_PORT`, `BACKEND_PORT`, `ML_PORT` or `POSTGRES_PORT` in `.env`. Keep `FRONTEND_URL` and `VITE_API_URL` in step with them.
+
+**4. Run the smoke test (optional)**
 ```bash
-docker compose exec backend npx prisma migrate deploy
+node scripts/smoke-test.mjs
 ```
+
+This checks every API route, the ML service and the frontend against the running stack. It needs Node 18+. It reads the same `.env` ports, and you can pass a GitHub repo to analyse, for example `node scripts/smoke-test.mjs pallets/click`. It creates a throwaway `smoke-…@example.com` user each run.
 
 ---
 
@@ -195,6 +187,9 @@ DEVMATE_AI/
 │       ├── training/   # Model training scripts
 │       └── utils/
 │   └── saved_models/   # Pre-trained model files (.pkl)
+├── scripts/
+│   └── smoke-test.mjs  # End-to-end check of the running stack
+├── .env.example        # Docker Compose configuration
 └── docker-compose.yml
 ```
 
