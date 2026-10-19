@@ -83,7 +83,6 @@ jobs:
       - run: npm run build
         env:
           VITE_API_URL: http://localhost:5000/api
-          VITE_GOOGLE_CLIENT_ID: placeholder
 
   # ─── Docker Build ─────────────────────────────────────────────────────────────
   docker-build:
@@ -130,6 +129,5 @@ jobs:
           tags: devmate-frontend:${{ github.sha }}
           build-args: |
             VITE_API_URL=http://localhost:5000/api
-            VITE_GOOGLE_CLIENT_ID=placeholder
           cache-from: type=gha
           cache-to: type=gha,mode=max
