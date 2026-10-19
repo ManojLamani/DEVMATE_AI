@@ -10,7 +10,7 @@ A full-stack GitHub repository analyzer SaaS that uses machine learning to provi
 | Backend | Node.js, Express, TypeScript, Prisma ORM |
 | Database | PostgreSQL |
 | ML Service | FastAPI, Python 3.11, scikit-learn, XGBoost |
-| Auth | JWT + Google OAuth 2.0 |
+| Auth | JWT (email + password) |
 | DevOps | Docker, Docker Compose |
 
 ---
@@ -48,13 +48,9 @@ POSTGRES_DB=devmate
 JWT_SECRET=your_jwt_secret_key_here
 JWT_EXPIRES_IN=7d
 
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
 GITHUB_TOKEN=your_github_personal_access_token
 
 VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
@@ -97,8 +93,6 @@ Create `.env` in the `backend/` folder:
 DATABASE_URL="postgresql://postgres:your_password@localhost:5432/devmate_db"
 JWT_SECRET="your_jwt_secret_key_here"
 JWT_EXPIRES_IN="7d"
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
 GITHUB_TOKEN=your_github_personal_access_token
 PORT=5000
 NODE_ENV="development"
@@ -156,7 +150,6 @@ npm install
 Create `.env` in the `frontend/` folder:
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 ```
 
 Start:
@@ -173,7 +166,6 @@ Frontend runs at **http://localhost:3000**
 | Key | Where to get |
 |---|---|
 | `GITHUB_TOKEN` | [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens) — needs `repo` and `read:user` scopes |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → OAuth 2.0 Client ID |
 | `ANTHROPIC_API_KEY` | [Anthropic Console](https://console.anthropic.com/) — required only for the AI repository explainer feature |
 
 ---
@@ -235,8 +227,6 @@ Deploy the full stack for free using **Vercel** (frontend) + **Render** (backend
 |---|---|
 | `DATABASE_URL` | Supabase connection string from Step 1 |
 | `JWT_SECRET` | Any long random string |
-| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
-| `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
 | `GITHUB_TOKEN` | Your GitHub personal access token |
 | `FRONTEND_URL` | `https://devmateai.com` (or Vercel URL for now) |
 | `ML_SERVICE_URL` | `https://devmate-ml-service.onrender.com` |
@@ -261,7 +251,6 @@ Deploy the full stack for free using **Vercel** (frontend) + **Render** (backend
 | Variable | Value |
 |---|---|
 | `VITE_API_URL` | `https://devmate-backend.onrender.com/api` |
-| `VITE_GOOGLE_CLIENT_ID` | Your Google OAuth client ID |
 
 5. Click **Deploy**
 6. Vercel gives you a free URL like `devmate-ai.vercel.app`
@@ -276,7 +265,6 @@ To use a domain like `devmateai.com`:
 2. In Vercel: **Project → Settings → Domains → Add Domain** → enter `devmateai.com`
 3. Vercel will show you DNS records — add them in your domain registrar's DNS settings
 4. Update `FRONTEND_URL` in Render's backend env vars to `https://devmateai.com`
-5. Add `https://devmateai.com` as an authorized origin in your Google OAuth credentials
 
 > **Note:** Free Render services spin down after 15 minutes of inactivity and take ~30 seconds to wake up on the first request. Upgrade to Render's paid plan ($7/month) to keep services always-on.
 
@@ -284,7 +272,7 @@ To use a domain like `devmateai.com`:
 
 ## Features
 
-- **Authentication** — Email/password and Google OAuth sign-in
+- **Authentication** — Email/password sign-in with JWT
 - **Repository Analysis** — Fetch and store GitHub repo data (languages, contributors, issues, PRs, branches)
 - **Issue Difficulty Prediction** — ML model classifies issues as Easy / Medium / Hard
 - **Repository Clustering** — Groups repos by type (frontend, backend, data science, etc.)

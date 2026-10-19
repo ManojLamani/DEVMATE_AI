@@ -30,7 +30,7 @@ Thumbs.db
 .idea/
 
 # Python
-*.pyc
-*.pyo
-__pycache__/
 .pytest_cache/
+
+# Deployment
+.vercel
