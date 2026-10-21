@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm install --include=dev && npx prisma generate && npm run build
-    startCommand: npx prisma db push --accept-data-loss && node dist/index.js
+    startCommand: npx prisma db execute --file prisma/predeploy.sql --schema prisma/schema.prisma && npx prisma db push --accept-data-loss && node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
